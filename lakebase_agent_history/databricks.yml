@@ -1,0 +1,61 @@
+# This is a Databricks asset bundle definition for lakebase_agent_history.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+
+bundle:
+  name: lakebase_agent_history
+  uuid: 540d5190-ae81-4e79-83cd-02188d646677
+
+variables: 
+  uc_catalog:
+    description: Unity Catalog used to store data and artifacts.
+    default: users
+  schema: 
+    description: "Schema in Unity Catalog."
+    default: veena_ramesh
+  experiment:
+    description: "Experiment to log run under."
+    default: /Workspace/Users/${workspace.current_user.userName}/experiments/agent_lakebase
+  registered_model:
+    description: "Name of Registered model."
+    default: agent_function_chatbot
+  model_alias:
+    description: "Model alias to use for trained model"
+    default: agent_latest
+  lakebase_instance:
+    description: "Lakebase instance to use for agent."
+    default: "veena-test"
+  databricks_host:
+    description: "Databricks host to use for agent."
+    default: "https://e2-demo-field-eng.cloud.databricks.com"
+  databricks_secret_scope:
+    description: "Databricks secret scope to use for agent."
+    default: "veena-ramesh"
+  databricks_client_id_key:
+    description: "Databricks client id key to use for agent."
+    default: "sp_client_id"
+  databricks_client_secret_key:
+    description: "Databricks client secret key to use for agent."
+    default: "sp_secret"
+  databricks_sp_application_id_key:
+    description: "Databricks sp application id key to use for agent."
+    default: "sp_application_id"
+ 
+include:
+  - ./resources/artifacts.yml
+  - ./resources/agent_workflow.yml
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+
+  prod:
+    mode: production
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+
+    permissions:
+      - user_name: veena.ramesh@databricks.com
+        level: CAN_MANAGE

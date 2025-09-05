@@ -1,0 +1,72 @@
+common_permissions: &permissions
+  permissions:
+    - level: CAN_VIEW
+      group_name: users
+
+resources:
+  jobs:
+    agent_job:
+      parameters:
+        - name: bundle_root
+          default: ${workspace.file_path}
+      name: ${bundle.target}-agent-job
+      tasks:
+        - task_key: AgentDevelopment
+          notebook_task:
+            notebook_path: ../agent/AgentDevelopment.py
+            base_parameters:
+              uc_catalog: ${var.uc_catalog}
+              schema: ${var.schema}
+              experiment: ${var.experiment}
+              registered_model: ${var.registered_model}
+              model_alias: ${var.model_alias}
+              # git source information of current ML resource deployment. It will be persisted as part of the workflow run
+              git_source_info: url:${bundle.git.origin_url}; branch:${bundle.git.branch}; commit:${bundle.git.commit}
+
+        - task_key: AgentEvaluation
+          depends_on:
+            - task_key: AgentDevelopment
+          notebook_task:
+            notebook_path: ../agent/AgentEvaluation.py
+            base_parameters:
+              uc_catalog: ${var.uc_catalog}
+              schema: ${var.schema}
+              registered_model: ${var.registered_model}
+              model_alias: ${var.model_alias}
+              experiment: ${var.experiment}
+              # git source information of current ML resource deployment. It will be persisted as part of the workflow run
+              git_source_info: url:${bundle.git.origin_url}; branch:${bundle.git.branch}; commit:${bundle.git.commit}
+          
+        - task_key: AgentDeployment
+          depends_on:
+            - task_key: AgentEvaluation
+          notebook_task:
+            notebook_path: ../agent/AgentDeployment.py
+            base_parameters:
+              uc_catalog: ${var.uc_catalog}
+              schema: ${var.schema}
+              registered_model: ${var.registered_model}
+              model_alias: ${var.model_alias}
+              experiment: ${var.experiment}
+              databricks_host: ${var.databricks_host}
+              databricks_secret_scope: ${var.databricks_secret_scope}
+              databricks_client_id_key: ${var.databricks_client_id_key}
+              databricks_client_secret_key: ${var.databricks_client_secret_key}
+              databricks_sp_application_id_key: ${var.databricks_sp_application_id_key}
+              lakebase_instance: ${var.lakebase_instance}
+              # git source information of current ML resource deployment. It will be persisted as part of the workflow run
+              git_source_info: url:${bundle.git.origin_url}; branch:${bundle.git.branch}; commit:${bundle.git.commit}
+
+      schedule:
+        quartz_cron_expression: "0 0 12 1 1/1 ? * " # runs once a month at 12 am  
+        pause_status: "PAUSED"
+        timezone_id: UTC
+
+      <<: *permissions
+      # If you want to turn on notifications for this job, please uncomment the below code,
+      # and provide a list of emails to the on_failure argument.
+      #
+      #  email_notifications:
+      #    on_failure:
+      #      - first@company.com
+      #      - second@company.com

@@ -1,0 +1,37 @@
+# This is a Databricks asset bundle definition for mlflow_custom_scorers.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: mlflow_custom_scorers
+  uuid: c6a3d603-1096-4104-a006-f5e2198248ca
+
+variables: 
+  uc_catalog:
+    description: Unity Catalog used to store data and artifacts.
+    default: users
+  schema: 
+    description: "Schema in Unity Catalog."
+    default: veena_ramesh
+  experiment:
+    description: "Experiment to log run under."
+    default: /Workspace/Users/${workspace.current_user.userName}/experiments/mlflow_custom_scorers
+  registered_model:
+    description: "Name of Registered model."
+    default: mlflow_custom_scorers
+  
+
+include:
+  - resources/*.yml
+  - resources/*/*.yml
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+
+  prod:
+    mode: production
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+
